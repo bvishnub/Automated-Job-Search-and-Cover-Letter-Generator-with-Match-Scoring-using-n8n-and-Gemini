@@ -1,0 +1,1 @@
+# Automated-Job-Search-and-Cover-Letter-Generator-with-Match-Scoring-using-n8n-and-Gemini
