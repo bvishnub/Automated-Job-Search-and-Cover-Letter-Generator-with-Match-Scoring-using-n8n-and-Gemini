@@ -1,0 +1,723 @@
+{
+  "name": "Automated Job Search & Cover Letter Generator with Match Scoring",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -944,
+        -544
+      ],
+      "id": "3d529ed5-b2a9-46b8-82b6-16961c67db02",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://rss.app/feeds/7uEpXaTE1rHPa7Uq.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        -544
+      ],
+      "id": "f363e528-e4d3-4882-870c-5a85cdf7eebc",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('RSS Read').item.json.link }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 5000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -496,
+        -544
+      ],
+      "id": "2b7540b2-f8e8-4bd8-abc9-208a6fb6060e",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -48,
+        -544
+      ],
+      "id": "95374492-0d4d-481a-a87e-2b26daf26d7c",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "sendTo": "vishnub195@gmail.com",
+        "subject": "LinkedIn Job Listing Update ",
+        "emailType": "text",
+        "message": "Hi Vishnu ,\n\nPlease find the matched job listings based on your resume attached below.\n\nRegards",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        752,
+        -736
+      ],
+      "id": "91a93bc1-7fca-43f1-bb4b-74a496d42da8",
+      "name": "Send a message",
+      "webhookId": "46c3aa9d-a84c-4e52-befa-8fac0fa25c37",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FEhnpZAcC1TvSeoK",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "19y8ScT1zNU-e1tLv2aNeMKSj8iVHsYhWjhgVCKgub-s",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "sheetsToFormat": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        176,
+        -736
+      ],
+      "id": "401d95df-bd34-4e7e-bac3-189c6013f917",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "DbivlZuVUAbcNbph",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "19y8ScT1zNU-e1tLv2aNeMKSj8iVHsYhWjhgVCKgub-s",
+          "mode": "list",
+          "cachedResultName": "LinkedIn_Job_Listings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19y8ScT1zNU-e1tLv2aNeMKSj8iVHsYhWjhgVCKgub-s/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1303976580,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/19y8ScT1zNU-e1tLv2aNeMKSj8iVHsYhWjhgVCKgub-s/edit#gid=1303976580"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Link": "={{ $('RSS Read').item.json.link }}",
+            "Title": "={{ $('RSS Read').item.json.title }}",
+            "Job Description": "={{ $('Code 1').item.json.job_description }}",
+            "Company Name": "={{ $('Code 1').item.json.company_name }}",
+            "Benefits": "={{ $('Code 1').item.json.benifits }}",
+            "Rating": "={{ $('Code 2').item.json.score }}",
+            "Cover Letter": "={{ $json.coverLetter }}",
+            "Date": "={{ $('RSS Read').item.json.pubDate }}"
+          },
+          "matchingColumns": [
+            "Link"
+          ],
+          "schema": [
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Job Description",
+              "displayName": "Job Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Link",
+              "displayName": "Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Rating",
+              "displayName": "Rating",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Company Name",
+              "displayName": "Company Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Benefits",
+              "displayName": "Benefits",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Cover Letter",
+              "displayName": "Cover Letter",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2576,
+        -544
+      ],
+      "id": "06a95f5c-cab3-442b-97ab-b40d6bbf529a",
+      "name": "Append or update row in sheet1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "MVHK8CpdpfBjAT40",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-thinking-exp-01-21",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash-thinking-exp-01-21"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an intelligent evaluation bot that scores how well a job listing matches a candidate's profile, using a 5-point scale based on the criteria below.\n\n# Scoring Criteria (Total: 5 Points)\n\n1.Skill Match (Max 3 points)\n- Award 3 points if the job skills match the candidate’s skills exactly.\n- Award 1 point if they mostly match.\n\n2.Experience Level (1 point)\n- Award 1 point if the job's required experience level aligns with the candidate’s background.\n\n3.Past Job Role Match (1 point)\n- Award 1 point if the candidate’s previous roles closely match the job position.\n\n4.Remote Opportunity (1 point)\n- Award 1 point if the job is remote-friendly.\n\n5.Resume Skill Alignment (1 point)\n- Award 1 point if the skills listed in the resume align with those required in the job.\n\n6.Qualifications Match (Max 3 points)\n- Award 3 points if the candidate fully meets the qualifications listed in the job description based on their resume.\n\n# Rules for Final Scoring\n\n- Final score must be a strict integer between 1 and 5, based on the criteria above.\n\n- Even if total possible points exceed 5, normalize and report only a score out of 5.\n\n- Do not provide decimal values or exceed the 5-point maximum.",
+              "role": "model"
+            },
+            {
+              "content": "=Here is the job listings details :\n\n {{ $('HTTP Request').item.json.data }}\n\n\nHere is the candidate skill set:\n# Sample Resume\n\nVishnu B\n📞 8506015664\n✉️ vishnub195@gmail.com\n\nProfessional Summary\n\nData-driven professional and Data Science enthusiast with 5+ years of experience in customer service and operations, including 2+ years as a team lead. Proficient in Python, SQL, Excel, Tableau, Power BI, and Machine Learning with strong expertise in analyzing large datasets and delivering actionable insights to optimize processes.\n\nEducation\n\nDeenbandhu Chhotu Ram University of Science and Technology\nB.Tech in Mechanical Engineering\n2013 - 2019\n📄 Degree Certificate\n\nKerala Sr. Secondary School\nHigher Secondary Education\n2012 - 2013\n📄 Certificate\n\nTech Stack\n\nLanguages & Tools (Expertise / 5):\n\nPython – 4.0\n\nSQL – 4.5\n\nTableau – 4.1\n\nExcel – 4.2\n\nPower BI – 4.3\n\nGit – 4.0\n\nPlatforms:\nJupyter Notebook, Google Colab, PostgreSQL, Visual Studio Code\n\nML Frameworks:\nPandas, NumPy, Matplotlib, Seaborn, Scikit-learn, NLTK\n\nCertifications\n\nAdvanced Certification in Full Stack Data Science & AI – IIT Guwahati, Aug 2024\n\nMicrosoft Excel – Excel from Beginner to Advanced – Udemy, Nov 2020\n\nSQL (Advanced) Certificate – HackerRank, Nov 2024\n\nPublications\n\nUnveiling the FinTech Revolution – Medium, April 2025\n\nProduct Dissection – ChatGPT – Medium, July 2024\n\nAwards\n\nBadges in Python and SQL – HackerRank, 2025\n\nInterests\n\nCricket, Gaming, Meditation\n\nWork Experience\n\nCogent E Services Limited – Noida\nTeam Leader – Operations\nJune 2021 – March 2024\n\nManaged a 20-member team handling daily operations, roster planning, SLA tracking, and key metrics like AL, ACHT, CSAT & NPS.\n\nBoosted CSAT from 78% to 84% and reduced repeat rates from 25% to 15% through coaching and performance optimization.\n\nBuilt Excel-based dashboards and reports improving efficiency by 20% and ensuring full compliance with quality standards.\n\nTraining Experience\n\nAlmaBetter\nData Science Trainee\nJan 2024 – Present\n\nAnalyzed 100,000+ record datasets using Python, SQL & Tableau across finance, health, and e-commerce sectors.\n\nBuilt Power BI, Tableau, and Excel dashboards that cut time-to-insight by 30%.\n\nRanked in top 5% of 150+ peers; served as Teaching Assistant, resolving over 100 technical queries in Python, SQL, and Power BI.\n\nProjects\n\nZomato Restaurant Clustering and Sentiment Analysis\nAlmaBetter Verified Project\nMarch 2025 – April 2025\n\nAnalyzed 9,000+ records; applied K-Means, DBSCAN, and Hierarchical Clustering.\n\nBuilt sentiment classifier using TF-IDF + Logistic Regression, Random Forest, Naive Bayes.\n\nBest F1-score: 87.59% with Logistic Regression.\n\nIdentified 3 distinct restaurant clusters:\n\nHigh-End: Rating 3.96, Revenue $140K\n\nMid-Tier: Rating 3.36, Revenue $63K\n\nBudget: Rating 3.54, Revenue $31K\n\nSkills: Pandas, NumPy, Matplotlib, Seaborn, K-Means, ML, Financial Analysis\n\nTata Steel Machine Failure Prediction\nAlmaBetter Verified Project\nFeb 2025 – March 2025\n\nPreprocessed 100,000+ records for predictive maintenance in steel manufacturing.\n\nUsed Random Forest (Recall: 84.04%, ROC-AUC: 95.54%) after comparing with Logistic Regression and Decision Tree.\n\nAchieved proactive failure detection and reduced downtime and operational costs.\n\nSkills: ML, Data Preprocessing, Logistic Regression, Predictive Analytics, Data Visualization\n\nSamsung Group Manufacturing Analysis – Power BI\nAlmaBetter Verified Project\nJan 2025 – March 2025\n\nAnalyzed 2 datasets using Power BI, Power Query, and DAX.\n\nBuilt 7 KPIs; revealed a 32.7% drop in production cost.\n\nUncovered inefficiencies in logistics and quality control with custom KPIs.\n\nHighlighted warehouse and regional performance discrepancies.\n\nSkills: Power BI, DAX, ETL, Data Modeling, Manufacturing Analytics"
+            },
+            {
+              "content": "You are in assistant role , Please return the JSON data structured the following way:\n{\n\"Score\" : \"\" // score should in integer format only\n}",
+              "role": "model"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -544
+      ],
+      "id": "da3c3285-1437-46c5-927e-912150fc0f62",
+      "name": "Mode 2 - Ratings Generator",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "68LW5DldG0afFrRZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-thinking-exp-01-21",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash-thinking-exp-01-21"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "You are an intelligent bot perfect at creating cover letters for a job. Please take the candidates resume and create a customized cover letter to the job."
+            },
+            {
+              "content": "=Here is the job listing details:\nTitle : \n {{ $('RSS Read').item.json.title }}\nDescription : {{ $('Code 1').item.json.job_description }}\nName : {{ $('Code 1').item.json.company_name }}\nLocation : {{ $('Code 1').item.json.location }}\n\nHere is the candidate skill set:\n# Sample Resume\nVishnu B\n📞 8506015664\n✉️ vishnub195@gmail.com\n\nProfessional Summary\n\nData-driven professional and Data Science enthusiast with 5+ years of experience in customer service and operations, including 2+ years as a team lead. Proficient in Python, SQL, Excel, Tableau, Power BI, and Machine Learning with strong expertise in analyzing large datasets and delivering actionable insights to optimize processes.\n\nEducation\n\nDeenbandhu Chhotu Ram University of Science and Technology\nB.Tech in Mechanical Engineering\n2013 - 2019\n📄 Degree Certificate\n\nKerala Sr. Secondary School\nHigher Secondary Education\n2012 - 2013\n📄 Certificate\n\nTech Stack\n\nLanguages & Tools (Expertise / 5):\n\nPython – 4.0\n\nSQL – 4.5\n\nTableau – 4.1\n\nExcel – 4.2\n\nPower BI – 4.3\n\nGit – 4.0\n\nPlatforms:\nJupyter Notebook, Google Colab, PostgreSQL, Visual Studio Code\n\nML Frameworks:\nPandas, NumPy, Matplotlib, Seaborn, Scikit-learn, NLTK\n\nCertifications\n\nAdvanced Certification in Full Stack Data Science & AI – IIT Guwahati, Aug 2024\n\nMicrosoft Excel – Excel from Beginner to Advanced – Udemy, Nov 2020\n\nSQL (Advanced) Certificate – HackerRank, Nov 2024\n\nPublications\n\nUnveiling the FinTech Revolution – Medium, April 2025\n\nProduct Dissection – ChatGPT – Medium, July 2024\n\nAwards\n\nBadges in Python and SQL – HackerRank, 2025\n\nInterests\n\nCricket, Gaming, Meditation\n\nWork Experience\n\nCogent E Services Limited – Noida\nTeam Leader – Operations\nJune 2021 – March 2024\n\nManaged a 20-member team handling daily operations, roster planning, SLA tracking, and key metrics like AL, ACHT, CSAT & NPS.\n\nBoosted CSAT from 78% to 84% and reduced repeat rates from 25% to 15% through coaching and performance optimization.\n\nBuilt Excel-based dashboards and reports improving efficiency by 20% and ensuring full compliance with quality standards.\n\nTraining Experience\n\nAlmaBetter\nData Science Trainee\nJan 2024 – Present\n\nAnalyzed 100,000+ record datasets using Python, SQL & Tableau across finance, health, and e-commerce sectors.\n\nBuilt Power BI, Tableau, and Excel dashboards that cut time-to-insight by 30%.\n\nRanked in top 5% of 150+ peers; served as Teaching Assistant, resolving over 100 technical queries in Python, SQL, and Power BI.\n\nProjects\n\nZomato Restaurant Clustering and Sentiment Analysis\nAlmaBetter Verified Project\nMarch 2025 – April 2025\n\nAnalyzed 9,000+ records; applied K-Means, DBSCAN, and Hierarchical Clustering.\n\nBuilt sentiment classifier using TF-IDF + Logistic Regression, Random Forest, Naive Bayes.\n\nBest F1-score: 87.59% with Logistic Regression.\n\nIdentified 3 distinct restaurant clusters:\n\nHigh-End: Rating 3.96, Revenue $140K\n\nMid-Tier: Rating 3.36, Revenue $63K\n\nBudget: Rating 3.54, Revenue $31K\n\nSkills: Pandas, NumPy, Matplotlib, Seaborn, K-Means, ML, Financial Analysis\n\nTata Steel Machine Failure Prediction\nAlmaBetter Verified Project\nFeb 2025 – March 2025\n\nPreprocessed 100,000+ records for predictive maintenance in steel manufacturing.\n\nUsed Random Forest (Recall: 84.04%, ROC-AUC: 95.54%) after comparing with Logistic Regression and Decision Tree.\n\nAchieved proactive failure detection and reduced downtime and operational costs.\n\nSkills: ML, Data Preprocessing, Logistic Regression, Predictive Analytics, Data Visualization\n\nSamsung Group Manufacturing Analysis – Power BI\nAlmaBetter Verified Project\nJan 2025 – March 2025\n\nAnalyzed 2 datasets using Power BI, Power Query, and DAX.\n\nBuilt 7 KPIs; revealed a 32.7% drop in production cost.\n\nUncovered inefficiencies in logistics and quality control with custom KPIs.\n\nHighlighted warehouse and regional performance discrepancies.\n\nSkills: Power BI, DAX, ETL, Data Modeling, Manufacturing Analytics\n"
+            },
+            {},
+            {
+              "content": "You are in assistant role ,Please return the JSON data structured the following way: \n{\n\"Cover Letter\" : \"\" // Content should be 200-250 words only\n}",
+              "role": "model"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        2000,
+        -544
+      ],
+      "id": "fed20062-e344-4ac9-a011-05304d69820f",
+      "name": "Model-3 -Cover Letter Creator",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "68LW5DldG0afFrRZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-thinking-exp-01-21",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash-thinking-exp-01-21"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "# System Message\nYou are an intelligent bot capable of pulling out data from job listing site.\n",
+              "role": "model"
+            },
+            {
+              "content": "=Here is the job site :\n {{ $json.data }}"
+            },
+            {
+              "content": "You are is assistant role, Please output the data in JSON Format using the following structure :\n\n{\n\"company_name\" : \"\",\n\"benifits\" : \"\" // medical plan etc,please separate by commas\n\"job_description\" : \"\",// please make it 200 characters or less\n\"location\" : \"\"\n} ",
+              "role": "model"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -544
+      ],
+      "id": "37716006-a098-4967-b41a-5a84040c3f6e",
+      "name": "Model 1 - Fetch Job Detail",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "68LW5DldG0afFrRZ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code processes each item coming into the node.\nreturn items.map(item => {\n  // 1. Access the raw text string which contains the JSON data.\n  const rawText = item.json.content.parts[0].text;\n  \n  // 2. Parse the string into a usable JavaScript object.\n  const parsedData = JSON.parse(rawText);\n  \n  // 3. Shorten the job description to a maximum of 200 characters.\n  if (parsedData.job_description && parsedData.job_description.length > 200) {\n    parsedData.job_description = parsedData.job_description.substring(0, 200);\n  }\n  \n  // 4. Create a new object with only the required fields.\n  const result = {\n    company_name: parsedData.company_name || \"\",\n    benifits: parsedData.benifits || \"\",\n    job_description: parsedData.job_description || \"\",\n    location: parsedData.location || \"\"\n  };\n  \n  // 5. Return the cleaned object in the standard n8n format.\n  return { json: result };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        -544
+      ],
+      "id": "1e4422e6-6437-4233-bc2d-824f226bd505",
+      "name": "Code 1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code will process the incoming item to extract the score.\nreturn items.map(item => {\n  // 1. Get the text string that contains the JSON with the score.\n  const scoreText = item.json.content.parts[0].text;\n  \n  // 2. Parse that string into a JavaScript object.\n  const parsedData = JSON.parse(scoreText);\n  \n  // 3. Extract the 'Score' value from the object.\n  const scoreValue = parsedData.Score;\n  \n  // 4. Return the score in a new, simple JSON object for the next node.\n  return {\n    json: {\n      score: scoreValue\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        -544
+      ],
+      "id": "dc190214-25f0-4778-98a5-484d0952abe2",
+      "name": "Code 2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// This code will extract the cover letter from the incoming data.\nreturn items.map(item => {\n  // 1. Access the text field containing the JSON string.\n  const rawText = item.json.content.parts[0].text;\n  \n  // 2. Parse the string into a JavaScript object.\n  const parsedData = JSON.parse(rawText);\n  \n  // 3. Get the value of the \"Cover Letter\" key.\n  const coverLetter = parsedData[\"Cover Letter\"];\n  \n  // 4. Return the extracted cover letter in a new object.\n  return {\n    json: {\n      coverLetter: coverLetter\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2352,
+        -544
+      ],
+      "id": "bfb019e7-d061-4a1b-8b7a-0d73ad6d93c3",
+      "name": "Code 3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        176,
+        -544
+      ],
+      "id": "9b843620-f068-4ebc-a01c-eb10ede8ad49",
+      "name": "Wait 1",
+      "webhookId": "f65035e7-a87a-4c7b-903b-adff0a5a96a8"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2800,
+        -472
+      ],
+      "id": "1b7585f2-cf5a-42f3-aa22-1606c6785bba",
+      "name": "Wait 4",
+      "webhookId": "c744670f-5d32-450c-848b-e3ce6877929e"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        -544
+      ],
+      "id": "cefed015-da70-4795-8eb4-c3d54cb76bbc",
+      "name": "Wait 3",
+      "webhookId": "d1b321d7-f32b-4c71-b599-0580248d6097"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        -544
+      ],
+      "id": "0cca9e6d-1202-4a7f-aafe-f9354c64e2ca",
+      "name": "Wait 2",
+      "webhookId": "e7b62be0-5442-49e1-a614-c0ede5d645d9"
+    },
+    {
+      "parameters": {
+        "maxItems": 3
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -544
+      ],
+      "id": "3381d7f3-5383-48d1-85fe-eb64bca36690",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {
+          "includeBinaries": true,
+          "keepOnlyUnique": true
+        }
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -736
+      ],
+      "id": "9f098980-09a2-4f75-a473-ddea359c5b8c",
+      "name": "Aggregate"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet1": {
+      "main": [
+        [
+          {
+            "node": "Wait 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mode 2 - Ratings Generator": {
+      "main": [
+        [
+          {
+            "node": "Wait 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model-3 -Cover Letter Creator": {
+      "main": [
+        [
+          {
+            "node": "Code 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model 1 - Fetch Job Detail": {
+      "main": [
+        [
+          {
+            "node": "Code 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code 1": {
+      "main": [
+        [
+          {
+            "node": "Wait 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code 2": {
+      "main": [
+        [
+          {
+            "node": "Model-3 -Cover Letter Creator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code 3": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1": {
+      "main": [
+        [
+          {
+            "node": "Model 1 - Fetch Job Detail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3": {
+      "main": [
+        [
+          {
+            "node": "Code 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 2": {
+      "main": [
+        [
+          {
+            "node": "Mode 2 - Ratings Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "64d86e40-9e47-4baf-ad99-edd1c4917ad8",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8a7c1813e30cb8deff3180be3e76f2c833563783f20a1a104c8961b64a09ac90"
+  },
+  "id": "abTnFj53y6wlo8fO",
+  "tags": []
+}
