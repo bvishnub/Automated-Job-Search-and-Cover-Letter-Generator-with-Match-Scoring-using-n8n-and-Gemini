@@ -87,6 +87,8 @@ cd job-auto-generator
 [Code Node - Clean/Format Response]
      ↓
 [Google Sheets - Append Row]
+↓
+[Google Drive Node - Download  Final Google Sheet]
      ↓
 [Gmail Node - Email Top Matches]
 ```
@@ -95,24 +97,25 @@ cd job-auto-generator
 
 ## 📸 Screenshots
 
+### 🔁 n8n Workflow View
+
+![Workflow Screenshot](Workflow_n8n.png)
+
+
 ### 🧾 Google Sheet Output
 
-![Google Sheet](assets/sheet_sample.png)
+![Google Sheet](Google_Sheet_Output_n8n.png)
 
 ---
 
 
 ### 📬 Daily Summary Email
 
-![Email Summary](assets/email_sample.png)
+![Email Summary](Email_Sample.png)
 
 ---
 
-### 🔁 n8n Workflow View
 
-![Workflow Screenshot](assets/workflow_screenshot.png)
-
----
 
 
 
